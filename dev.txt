@@ -1,0 +1,69 @@
+# RASA NLU on Raspberry Pi 3 B+
+# REF: https://pypi.org/project/rasa-nlu/
+
+# Method 1 using arm32v7/python
+
+docker run --name rasa_nlu -it -p 5000:5000 arm32v7/python:3.7.3-slim-stretch bash
+docker run -it arm32v7/python:3.7.3-slim-stretch bash
+apt-get update
+apt-get upgrade -y
+apt-get install -y build-essential cmake git libfreetype6-dev libpng-dev pkg-config
+apt-get install -y gcc gfortran python-dev libopenblas-dev liblapack-dev cython
+apt-get install -y libopenblas-base libatlas3-base
+
+update-alternatives --list libblas.so.3
+update-alternatives --set libblas.so.3 /usr/lib/openblas-base/libblas.so.3
+
+pip install Cython
+pip install scipy
+
+python -V
+#pip install pip --upgrade
+pip install numpy
+pip install matplotlib
+#pip install spacy # https://github.com/explosion/spaCy/issues/3451
+pip install spacy==2.0.18
+pip install sklearn_crfsuite
+#pip install scikit-learn
+pip install rasa_nlu
+
+python -m spacy download en
+python -m rasa_nlu.server -h
+python -m rasa_nlu.server --path /tmp
+curl 'http://localhost:5000/parse?q=hello'
+
+
+
+# Method 2 using raspbian/stretch
+
+docker run --name rasa_nlu -it -p 5000:5000 raspbian/stretch bash
+
+apt-get update
+apt-get upgrade -y
+apt-get install -y python3 python3-matplotlib python3-scipy python3-pip libfreetype6-dev pkg-config libpng-dev
+
+python3 -V
+# --no-cache-dir
+pip3 install numpy
+pip3 install scipy
+pip3 install matplotlib
+#pip3 install spacy # https://github.com/explosion/spaCy/issues/3451
+pip3 install spacy==2.0.18
+pip3 install sklearn_crfsuite
+pip3 install rasa_nlu
+
+python3 -m spacy download en
+python3 -m rasa_nlu.server -h
+python3 -m rasa_nlu.server --path /tmp
+curl 'http://localhost:5000/version'
+
+curl 'http://localhost:5000/parse?q=hello'
+
+
+#docker stop rasa_nlu && docker rm rasa_nlu
+
+wget 'https://raw.githubusercontent.com/RasaHQ/rasa_nlu/master/sample_configs/config_train_server_md.yml'
+curl --request POST --header 'content-type: application/x-yml' --data-binary @config_train_server_md.yml --url 'localhost:5000/train?project=test_model'
+
+wget 'https://raw.githubusercontent.com/RasaHQ/rasa_nlu/master/sample_configs/config_train_server_md.yml'
+curl --request POST --header 'content-type: application/x-yml' --data-binary @config_train_server_md.yml --url 'localhost:5000/train?project=default'

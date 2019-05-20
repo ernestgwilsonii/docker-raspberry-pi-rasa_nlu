@@ -1,0 +1,27 @@
+FROM arm32v7/python:3.7.3-slim-stretch
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y apt-utils build-essential cmake cython gcc gfortran git libatlas3-base libopenblas-dev libfreetype6-dev liblapack-dev libopenblas-base libpng-dev pkg-config python-dev \
+    && update-alternatives --list libblas.so.3 \
+    && update-alternatives --set libblas.so.3 /usr/lib/openblas-base/libblas.so.3 \
+    && python -V \
+    && pip install pip --upgrade \
+    && pip install Cython \
+    && pip install scipy \
+    && pip install numpy \
+    && pip install matplotlib \
+    && pip install spacy==2.0.18 \
+    && pip install sklearn_crfsuite \
+    && pip install scikit-learn \
+    && pip install rasa_nlu \
+    && python -m spacy download en \
+    && python -m rasa_nlu.server -h \
+    && apt-get clean -y \
+    && apt-get autoclean -y \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+    
+EXPOSE 5000/tcp
+ 
+CMD ["/usr/local/bin/python", "-m", "rasa_nlu.server", "--path", "/opt/rasa"]

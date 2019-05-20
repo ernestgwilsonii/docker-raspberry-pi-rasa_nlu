@@ -1,0 +1,29 @@
+version: '3.4'
+
+services:
+
+  rasa_nlu:
+    image: ernestgwilsonii/docker-raspberry-pi-rasa_nlu:15 
+    hostname: rasa_nlu
+    command: ["/usr/local/bin/python", "-m", "rasa_nlu.server", "--path", "/opt/rasa"]
+    ports:
+      # RASA NLU API unencrypted TCP 5000
+      - mode: host
+        target: 5000
+        published: 5000
+        protocol: tcp
+    networks:
+      - rasa-net1
+    volumes:
+      - type: bind
+        source: /opt/rasa
+        target: /opt/rasa
+    deploy:
+      labels:
+        local.description: "RASA NLU"
+      restart_policy:
+        condition: on-failure
+
+networks:
+  rasa-net1:
+
